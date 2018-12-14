@@ -80,9 +80,15 @@ namespace TelegramBot {
         }
 
         static string getItems() {
-            var toReturn = "These are the items on your list:\n\n";
-            for(var i = 0; i < itemList.Count; i++) {
-                toReturn += "*>*" + itemList.ElementAt(i).name + "\n";
+            var toReturn = "";
+
+            if(itemList.Count > 0) {
+                toReturn = "These are the items on your list:\n\n";
+                for(var i = 0; i < itemList.Count; i++) {
+                    toReturn += "*>*" + itemList.ElementAt(i).name + "\n";
+                }
+            } else {
+                toReturn = "There are currently no items in your list";
             }
             return toReturn;
         }
