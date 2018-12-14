@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Args;
-using Microsoft.EntityFrameworkCore;
 
 namespace TelegramBot {
     class Program {
@@ -39,7 +39,7 @@ namespace TelegramBot {
                 } else if(message.StartsWith("/get")) {
                     reply = getItems();
                 } else if(message.StartsWith("/clear")) {
-                    reply = getItems();
+                    reply = clearItems();
                 } else {
                     reply = "Unknown option.";
                 }
@@ -54,9 +54,13 @@ namespace TelegramBot {
         static string removeItem(string message) {
             var messageItem = message.Substring(7).TrimStart();
             var itemToRemove = itemList.Find(x => x.name == messageItem);
-            itemList.Remove(itemToRemove);
+            if(itemToRemove != null) {
+                itemList.Remove(itemToRemove);
 
-            return $"Removing {itemToRemove.name}";
+                return $"Removing {itemToRemove.name}.";
+            } else {
+                return $"Could not remove {messageItem}.";
+            }
         }
 
         static string addItem(string message) {
@@ -67,7 +71,7 @@ namespace TelegramBot {
             };
 
             itemList.Add(item);
-            return $"Adding {item.name}";
+            return $"Adding {item.name}.";
         }
 
         static string sendHelp() {
@@ -76,7 +80,7 @@ namespace TelegramBot {
 
         static string clearItems() {
             itemList.Clear();
-            return "All items have been removed from the list";
+            return "All items have been removed from the list.";
         }
 
         static string getItems() {
@@ -85,10 +89,10 @@ namespace TelegramBot {
             if(itemList.Count > 0) {
                 toReturn = "These are the items on your list:\n\n";
                 for(var i = 0; i < itemList.Count; i++) {
-                    toReturn += "*>*" + itemList.ElementAt(i).name + "\n";
+                    toReturn += "- " + itemList.ElementAt(i).name + "\n";
                 }
             } else {
-                toReturn = "There are currently no items in your list";
+                toReturn = "There are currently no items in your list.";
             }
             return toReturn;
         }
