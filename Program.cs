@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types.Enums;
 
 namespace TelegramBot {
     class Program {
@@ -12,15 +14,17 @@ namespace TelegramBot {
         static string token = Authentication.token;
         static List<Items> itemList = new List<Items>();
 
-        static void Main() {
-        botClient = new TelegramBotClient(token);
+        static Regex helloRegex = new Regex(@"^hello|hi|hey$", RegexOptions.IgnoreCase);
 
+        static void Main() {
+            botClient = new TelegramBotClient(token);
             var me = botClient.GetMeAsync().Result;
-            Console.WriteLine($"Hello, World! I am user {me.Id} and my name is {me.FirstName}.");
 
             botClient.OnMessage += Bot_OnMessage;
-            botClient.StartReceiving();
-            Thread.Sleep(int.MaxValue);
+            botClient.StartReceiving(Array.Empty<UpdateType>());
+            Console.WriteLine($"Start listening for @{me.Username}");
+            Console.ReadLine();
+            botClient.StopReceiving();
         }
 
         static async void Bot_OnMessage(object sender, MessageEventArgs e) {
@@ -30,7 +34,9 @@ namespace TelegramBot {
                 string message = e.Message.Text.Trim();
                 string reply = "";
 
-                if(message.StartsWith("/help")) {
+                if(helloRegex.Matches(message).Count > 0) {
+                    reply = "Hello!";
+                } else if(message.StartsWith("/help")) {
                     reply = sendHelp();
                 } else if(message.StartsWith("/remove")) {
                     reply = removeItem(message);
