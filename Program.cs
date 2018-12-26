@@ -7,12 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
+using TelegramBot.DAL;
+using TelegramBot.Models;
 
 namespace TelegramBot {
     class Program {
         static ITelegramBotClient botClient;
         static string token = Authentication.token;
-        static List<Items> itemList = new List<Items>();
+        static TelegramBotContext context = new TelegramBotContext();
 
         static Regex helloRegex = new Regex(@"^hello|hi|hey$", RegexOptions.IgnoreCase);
 
@@ -59,10 +61,10 @@ namespace TelegramBot {
 
         static string removeItem(string message) {
             var messageItem = message.Substring(7).TrimStart();
-            var itemToRemove = itemList.Find(x => x.name == messageItem);
+            var itemToRemove = context.Items.FirstOrDefault(x => x.name == messageItem);
             if(itemToRemove != null) {
-                itemList.Remove(itemToRemove);
-
+                context.Remove(itemToRemove);
+                context.SaveChanges();
                 return $"Removing {itemToRemove.name}.";
             } else {
                 return $"Could not remove {messageItem}.";
@@ -71,13 +73,12 @@ namespace TelegramBot {
 
         static string addItem(string message) {
             var messageItem = message.Substring(4).TrimStart();
-            var item = new Items {
-                name = messageItem,
-                itemId = 0
-            };
+            context.Items.Add(new Items {
+                name=messageItem
+            });
 
-            itemList.Add(item);
-            return $"Adding {item.name}.";
+            context.SaveChanges();
+            return $"Adding {messageItem}.";
         }
 
         static string sendHelp() {
@@ -85,17 +86,19 @@ namespace TelegramBot {
         }
 
         static string clearItems() {
-            itemList.Clear();
-            return "All items have been removed from the list.";
+            context.Items.RemoveRange(context.Items);
+            context.SaveChanges();
+            return "All items have been removed from your list.";
         }
 
         static string getItems() {
             var toReturn = "";
 
-            if(itemList.Count > 0) {
+            if(context.Items.Count() > 0) {
+                var allItems = context.Items.Select(x => x).ToList();
                 toReturn = "These are the items on your list:\n\n";
-                for(var i = 0; i < itemList.Count; i++) {
-                    toReturn += "- " + itemList.ElementAt(i).name + "\n";
+                for(var i = 0; i < allItems.Count; i++) {
+                    toReturn += "- " + allItems.ElementAt(i).name + "\n";
                 }
             } else {
                 toReturn = "There are currently no items in your list.";
