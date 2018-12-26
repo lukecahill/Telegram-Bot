@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TelegramBot {
+namespace TelegramBot.Models {
     class Items {
-        [Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int itemId { get; set; }
         public string name { get; set; }
     }
