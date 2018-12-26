@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using TelegramBot.Models;
 
-namespace TelegramBot {
+namespace TelegramBot.DAL {
     class TelegramBotContext : DbContext {
         public DbSet<Items> Items { get; set; }
 
